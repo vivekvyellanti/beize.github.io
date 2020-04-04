@@ -1,0 +1,378 @@
+    <html>
+    <head>
+        <title>Yellanti_Dataviz_ass1</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+        <style>
+            .slidecontainer {
+                width: 100%;
+            }
+
+            .slider {
+                -webkit-appearance: none;
+                width: 25%;
+                height: 10px;
+                border-radius: 5px;
+                background: #d3d3d3;
+                outline: none;
+                opacity: 0.7;
+                -webkit-transition: .2s;
+                transition: opacity .2s;
+            }
+
+                .slider:hover {
+                    opacity: 1;
+                }
+
+                .slider::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 25px;
+                    height: 25px;
+                    border-radius: 50%;
+                    background: #4CAF50;
+                    cursor: pointer;
+                }
+
+                .slider::-moz-range-thumb {
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    background: #4CAF50;
+                    cursor: pointer;
+                }
+        </style>
+
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    </head>
+
+    <body>
+        <div class="jumbotron text-center">
+            <h1>Beizer Curve </h1>
+            <p>by Yellanti Venkat Vivek</p>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h3>Linear</h3>
+                    <svg id="linear">
+                        <path id="linearpath"></path>
+                        <circle id="circle1" cx="55" cy="171" r="10" fill="black" />
+                        <circle id="circle2" cx="208" cy="56" r="10" fill="black" />
+                    </svg>
+                </div>
+                <div class="col">
+                    <h3>Quadratic</h3>
+                    <svg id="quadratic">
+                        <path id="quadraticpath"></path>
+                        <path id="quadratic_control_path"></path>
+                        <circle id="circle3" cx="37" cy="168" r="10" fill="black" />
+                        <circle id="circle4" cx="123" cy="38" r="10" fill="black" />
+                        <circle id="circle5" cx="201" cy="163" r="10" fill="black" />
+                    </svg>
+                </div>
+                <div class="col">
+                    <h3>Cubic</h3>
+                    <svg id="cubic">
+                        <path id="cubicpath"></path>
+                        <path id="cubic_control_path"></path>
+                        <circle id="circle6" cx="32" cy="209" r="10" fill="black" />
+                        <circle id="circle7" cx="83" cy="30" r="10" fill="black" />
+                        <circle id="circle8" cx="172" cy="24" r="10" fill="black" />
+                        <circle id="circle9" cx="201" cy="221" r="10" fill="black" />
+                    </svg>
+                </div>
+                <div class="col">
+
+                    <h3>Quartic</h3>
+                    <svg id="quartic">
+                        <path id="quarticpath"></path>
+                        <path id="quartic_control_path"></path>
+                        <circle id="circle10" cx="215" cy="33" r="10" fill="black" />
+                        <circle id="circle11" cx="163" cy="192" r="10" fill="black" />
+                        <circle id="circle12" cx="125" cy="43" r="10" fill="black" />
+                        <circle id="circle13" cx="68" cy="25" r="10" fill="black" />
+                        <circle id="circle14" cx="26" cy="198" r="10" fill="black" />
+                    </svg>
+
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="d-flex justify-content-center my-4">
+            <form onclick="RadioFunction()">
+
+
+                <input min=0 max=100 value=0 type="range" id="slider" class="form-control-range" ><br><br />
+
+
+
+                <input type="radio" id="comp" name="status" value="complete" checked="checked"> Complete&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="radio" id="prog" name="status" value="In-progress"> In-progress<br><br>
+                <button onclick="myFunction()" id="reset" class="btn btn-info">Reset Position of Control Points</button>
+            </form>
+
+        </div>
+
+
+
+
+        <script>
+             //class="slider"
+
+            function myFunction()
+            {location.reload();}
+
+            var lineFunction = d3.line().x(function (d) { return d.cx; }).y(function (d) { return d.cy; });
+
+       		svg_linear = d3.select("#linear").attr("width", 250).attr("height", 250).style("background", "#ccccff");
+    		svg_linear.selectAll("circle").call(d3.drag().on("drag",dragged))
+
+            svg_quadratic = d3.select("#quadratic").attr("width", 250).attr("height", 250).style("background", "#ccccff");
+            svg_quadratic.selectAll("circle").call(d3.drag().on("drag",dragged))
+
+            svg_cubic = d3.select("#cubic").attr("width", 250).attr("height", 250).style("background", "#ccccff");
+            svg_cubic.selectAll("circle").call(d3.drag().on("drag",dragged))
+
+            svg_quartic = d3.select("#quartic").attr("width", 250).attr("height", 250).style("background", "#ccccff");
+            svg_quartic.selectAll("circle").call(d3.drag().on("drag",dragged))
+
+
+
+
+            generate_bezier_curve_linear();
+
+    	        //whenever you move your slider the function generate_bezier_curve will be invoked
+    	    d3.select("#slider").on("input", generate_bezier_curve_linear)
+
+
+    		function dragged(d)
+                {
+    			d3.select(this).attr("cx",d3.event.x).attr("cy",d3.event.y)
+    			generate_bezier_curve_linear()
+    		     }
+
+
+    		    function RadioFunction()
+                {
+    			generate_bezier_curve_linear()
+    		    }
+
+
+
+
+                    function generate_bezier_curve_linear(){
+    	              //logging the value of the slider
+                          var count = d3.select("#slider").property("value")
+    	              console.log(count);
+
+    	          var cir1 = document.getElementById('circle1');
+    		      var x1=parseInt(cir1.getAttribute('cx'));
+    		      var y1=parseInt(cir1.getAttribute('cy'));
+    		      var cir2 = document.getElementById('circle2');
+    	 	      var x2=parseInt(cir2.getAttribute('cx'));
+    		      var y2=parseInt(cir2.getAttribute('cy'));
+                        //quadratic
+            var quadratic_data = [];
+            var cir3 = document.getElementById('circle3');
+            var x3 = parseInt(cir3.getAttribute('cx'));
+            var y3=parseInt(cir3.getAttribute('cy'));
+            var cir4 = document.getElementById('circle4');
+            var x4 = parseInt(cir4.getAttribute('cx'));
+            var y4=parseInt(cir4.getAttribute('cy'));
+            var cir5 = document.getElementById('circle5');
+            var x5 = parseInt(cir5.getAttribute('cx'));
+            var y5=parseInt(cir5.getAttribute('cy'));
+            quad_data1 = [{ cx: x3, cy: y3 }, { cx: x4, cy: y4 }, { cx:x5 , cy: y5 }]
+            svg_quadratic.select("#quadratic_control_path").attr("d", lineFunction(quad_data1)).attr("stroke","black").attr("stroke-width",2).attr("fill" ,"none")
+        //cubic
+         var cubic_data = [];
+            var cir6 = document.getElementById('circle6');
+            var x6 = parseInt(cir6.getAttribute('cx'));
+            var y6=parseInt(cir6.getAttribute('cy'));
+            var cir7 = document.getElementById('circle7');
+            var x7 = parseInt(cir7.getAttribute('cx'));
+            var y7=parseInt(cir7.getAttribute('cy'));
+            var cir8 = document.getElementById('circle8');
+            var x8 = parseInt(cir8.getAttribute('cx'));
+            var y8=parseInt(cir8.getAttribute('cy'));
+            var cir9 = document.getElementById('circle9');
+            var x9 = parseInt(cir9.getAttribute('cx'));
+            var y9=parseInt(cir9.getAttribute('cy'));
+            cubic_data1 = [{ cx: x6, cy: y6 }, { cx: x7, cy: y7 }, { cx:x8 , cy: y8 },{ cx:x9 , cy: y9 }]
+            svg_cubic.select("#cubic_control_path").attr("d", lineFunction(cubic_data1)).attr("stroke","black").attr("stroke-width",2).attr("fill" ,"none")
+                //quartic
+        var quartic_data = [];
+            var cir10 = document.getElementById('circle10');
+            var x10 = parseInt(cir10.getAttribute('cx'));
+            var y10=parseInt(cir10.getAttribute('cy'));
+            var cir11 = document.getElementById('circle11');
+            var x11 = parseInt(cir11.getAttribute('cx'));
+            var y11 =parseInt(cir11.getAttribute('cy'));
+            var cir12 = document.getElementById('circle12');
+            var x12 = parseInt(cir12.getAttribute('cx'));
+            var y12 =parseInt(cir12.getAttribute('cy'));
+            var cir13 = document.getElementById('circle13');
+            var x13 = parseInt(cir13.getAttribute('cx'));
+            var y13=parseInt(cir13.getAttribute('cy'));
+            var cir14 = document.getElementById('circle14');
+            var x14 = parseInt(cir14.getAttribute('cx'));
+            var y14=parseInt(cir14.getAttribute('cy'));
+                quartic_data1 = [{ cx: x10, cy: y10 }, { cx: x11, cy: y11 }, { cx:x12 , cy: y12 },{ cx:x13 , cy: y13 },{ cx:x14 , cy: y14} ]
+            svg_quartic.select("#quartic_control_path").attr("d", lineFunction(quartic_data1)).attr("stroke","black").attr("stroke-width",2).attr("fill" ,"none")
+
+                  var i= 0.01;
+                  var count1;
+    		      count1=count/100;
+    		      var linear_data = [];
+
+
+
+                          var button1 = document.getElementById("comp");
+                          var button2 = document.getElementById("prog");
+
+    		        if (button1.checked){
+
+
+    			   for (var u = 0; u < count; u++) {
+                                    let t = u / (count - 1)
+                    		let p = 1 - t
+                            //linear
+                                	var a = ((1-p)*x1)+(p*x2)
+                                	var b = ((1-p)*y1)+(p*y2)
+
+
+    		                var linear_datapoint = {cx:a, cy:b};
+    		            	linear_data.push(linear_datapoint);
+
+
+        c = p*p*x3 + 2*p*t*x4 + t*t*(x5)
+        d = p*p*y3+ 2*p*t*y4  + t*t*(y5)
+        var quadratic_datapoint = {cx:c, cy:d};
+        quadratic_data.push(quadratic_datapoint);
+
+        e = p*p*p*x6 + 3*p*p*t*x7 +3*p*t*t*x8 + t*t*t*x9
+        f = p*p*p*y6 + 3*p*p*t*y7 +3*p*t*t*y8 + t*t*t*y9
+        var cubic_datapoint = {cx:e, cy:f};
+        cubic_data.push(cubic_datapoint);
+
+        g= p*p*p*p*x10 + 4*p*p*p*t*x11 + 6*p*p*t*t*x12 + p*t*t*t*x13 + t*t*t*t*x14
+        h= p*p*p*p*y10 + 4*p*p*p*t*y11 + 6*p*p*t*t*y12 + p*t*t*t*y13 + t*t*t*t*y14
+        var quartic_datapoint = {cx:g, cy:h};
+        quartic_data.push(quartic_datapoint);
+
+
+
+
+
+
+
+    		            	}
+        //linear
+    		            	var linear_selection = svg_linear.selectAll(".c1").data(linear_data).attr("r",3).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c1",true)
+    		            	linear_selection.enter().append("circle").attr("r",3).merge(linear_selection).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c1",true).call(d3.drag().on("drag",dragged))
+    			    	    svg_linear.select('#linearpath').attr("d",lineFunction(linear_data)).attr("stroke","red").attr("stroke-width",2).attr("fill" ,"none")
+    	                    linear_selection.exit().remove()
+        //quadratic
+
+
+    var quadratic_selection = svg_quadratic.selectAll(".c3").data(quadratic_data).attr("r",3).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c3",true)
+    quadratic_selection.enter().append("circle").attr("r",3).merge(quadratic_selection).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c3",true).call(d3.drag().on("drag",dragged))
+    svg_quadratic.select('#quadraticpath').attr("d",lineFunction(quadratic_data)).attr("stroke","red").attr("stroke-width",2).attr("fill" ,"none")
+
+    quadratic_selection.exit().remove()
+
+        //cubic
+    var cubic_selection = svg_cubic.selectAll(".c7").data(cubic_data).attr("r",3).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c7",true)
+    cubic_selection.enter().append("circle").attr("r",3).merge(quadratic_selection).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c7",true).call(d3.drag().on("drag",dragged))
+    svg_cubic.select('#cubicpath').attr("d",lineFunction(cubic_data)).attr("stroke","red").attr("stroke-width",2).attr("fill" ,"none")
+
+    cubic_selection.exit().remove()
+
+        //quartic
+        var quartic_selection = svg_quartic.selectAll(".c7").data(quartic_data).attr("r",3).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c7",true)
+        quartic_selection.enter().append("circle").attr("r",3).merge(quartic_selection).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c7",true).call(d3.drag().on("drag",dragged))
+        svg_quartic.select('#quarticpath').attr("d",lineFunction(quartic_data)).attr("stroke","red").attr("stroke-width",2).attr("fill" ,"none")
+        quartic_selection.exit().remove()
+
+
+
+
+
+
+        }
+    			else if (button2.checked){
+       			    	while (i <= count1){
+                                	var a = ((1-i)*x1)+(i*x2)
+                                	var b = ((1-i)*y1)+(i*y2)
+
+                                    var c = (1-i)*(1-i)*x3 + 2*(1-i)*i*x4 + i*i*(x5)
+                                    var d = (1-i)*(1-i)*y3 + 2*(1-i)*i*y4 + i*i*(y5)
+        e = (1-i)*(1-i)*(1-i)*x6 + 3*(1-i)*(1-i)*i*x7 +3*(1-i)*i*i*x8 + i*i*i*x9
+        f = (1-i)*(1-i)*(1-i)*y6 + 3*(1-i)*(1-i)*i*y7 +3*(1-i)*i*i*y8 + i*i*i*y9
+        var cubic_datapoint = {cx:e, cy:f};
+        cubic_data.push(cubic_datapoint);
+
+        g= (1-i)*(1-i)*(1-i)*(1-i)*x10 + 4*(1-i)*(1-i)*(1-i)*i*x11 + 6*(1-i)*(1-i)*i*i*x12 + (1-i)*i*i*i*x13 + i*i*i*i*x14
+        h= (1-i)*(1-i)*(1-i)*(1-i)*y10 + 4*(1-i)*(1-i)*(1-i)*i*y11 + 6*(1-i)*(1-i)*i*i*y12 + (1-i)*i*i*i*y13 + i*i*i*i*y14
+        var quartic_datapoint = {cx:g, cy:h};
+        quartic_data.push(quartic_datapoint);
+
+
+        var quadratic_datapoint = {cx:c, cy:d};
+        quadratic_data.push(quadratic_datapoint);
+    		            	var linear_datapoint = {cx:a, cy:b};
+    		            	linear_data.push(linear_datapoint);
+    		            	i=i+0.01;
+    		            	}
+    		            	var linear_selection = svg_linear.selectAll(".c1").data(linear_data).attr("r",3).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c1",true)
+    		            	linear_selection.enter().append("circle").attr("r",3).merge(linear_selection).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c1",true).call(d3.drag().on("drag",dragged))
+    			    	svg_linear.select('#linearpath').attr("d",lineFunction(linear_data)).attr("fill" ,"none")
+    	                    	linear_selection.exit().remove()
+        var quadratic_selection = svg_quadratic.selectAll(".c3").data(quadratic_data).attr("r",3).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c3",true)
+    quadratic_selection.enter().append("circle").attr("r",3).merge(quadratic_selection).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c3",true).call(d3.drag().on("drag",dragged))
+    svg_quadratic.select('#quadraticpath').attr("d",lineFunction(quadratic_data)).attr("fill" ,"none")
+
+    quadratic_selection.exit().remove()
+
+
+    var cubic_selection = svg_cubic.selectAll(".c7").data(cubic_data).attr("r",3).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c7",true)
+    cubic_selection.enter().append("circle").attr("r",3).merge(quadratic_selection).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c7",true).call(d3.drag().on("drag",dragged))
+    svg_cubic.select('#cubicpath').attr("d",lineFunction(cubic_data)).attr("fill" ,"none")
+
+    cubic_selection.exit().remove()
+
+
+        var quartic_selection = svg_quartic.selectAll(".c7").data(quartic_data).attr("r",3).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c7",true)
+        quartic_selection.enter().append("circle").attr("r",3).merge(quartic_selection).attr("cx",function(d,i){return d.cx;}).attr("cy",function(d,i){return d.cy;}).classed("c7",true).call(d3.drag().on("drag",dragged))
+        svg_quartic.select('#quarticpath').attr("d",lineFunction(quartic_data)).attr("fill" ,"none")
+        quartic_selection.exit().remove()
+
+
+
+
+
+    			    }
+
+                    }
+
+        </script>
+        <br>
+
+
+
+    </body>
+
+    </html>	
+
+
+
+
